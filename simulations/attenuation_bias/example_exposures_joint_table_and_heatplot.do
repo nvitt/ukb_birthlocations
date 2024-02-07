@@ -16,13 +16,18 @@ global OUTPUT	"C:/Users/pk20062/Dropbox/DONNI - UKB birth location accuracy/"
 
 
 *** Load simulation output:
-use "${OUTPUT}/output/simulations/examples_sibling_error_v4.dta", clear
+use "${OUTPUT}/output/simulations/examples_sibling_error.dta", clear
 gen estimation="OLS"
 
-append using "${OUTPUT}/output/simulations/examples_sibling_error_sibling_fe_v3.dta"
+append using "${OUTPUT}/output/simulations/examples_sibling_error_sibling_fe.dta"
 replace estimation="FE" if estimation==""
 
-keep varname bias estimation
+count if n_unbiased==n_biased
+count if n_unbiased!=n_biased
+
+gen n=n_unbiased
+
+keep varname bias n estimation
 
 
 *** Summary of the simulation output:
@@ -96,7 +101,7 @@ esttab bias_ols bias_fe using "${OUTPUT}/output/tablefragments/bias_examples_com
 			
 			
 			
-collapse (mean) bias, by(varname vartype group estimation)
+collapse (mean) bias n, by(varname vartype group estimation)
 
 
 
@@ -117,7 +122,7 @@ heatplot bias i.group estimation, ///
 	ylabel(, noticks labgap(5pt) labsize(vsmall) axis(1)) ///
 	ylabel(4.5 "Disease rates" 11 "Demographics" 21 "Demographics - 1951 census", noticks labsize(vsmall) axis(3) angle(90)) ///
 	ytick(0.5 8.5 13.5 28.5, axis(3) tposition(inside)) ///
-	legend(off) ysize(4) xsize(4) yaxis(1 2 3)
+	legend(off) ysize(18cm) xsize(18cm) yaxis(1 2 3)
 
 graph export "${OUTPUT}/output/graphs/attenuation_bias/common_scale/bias_examples_bw_v1.png", replace width(2000)
 graph export "${OUTPUT}/output/graphs/attenuation_bias/common_scale/bias_examples_bw_v1.pdf", replace
@@ -138,7 +143,7 @@ heatplot bias i.group estimation, ///
 	ylabel(, noticks labgap(5pt) labsize(vsmall) axis(1)) ///
 	ylabel(4.5 `""{bf:Disease rates}" "{bf:1st year of life}""' 11 `""{bf:Demographics}" "{bf:1st year of life}""' 21 `""{bf:Demographics}" "{bf:1951 census}""', noticks labsize(vsmall) axis(3) angle(90)) ///
 	ytick(0.5 8.5 13.5 28.5, axis(3) tposition(inside)) ///
-	legend(off) ysize(4) xsize(4) yaxis(1 2 3)
+	legend(off) ysize(18cm) xsize(18cm) yaxis(1 2 3)
 
 graph export "${OUTPUT}/output/graphs/attenuation_bias/common_scale/bias_examples_colour_v1.png", replace width(2000)
 graph export "${OUTPUT}/output/graphs/attenuation_bias/common_scale/bias_examples_colour_v1.pdf", replace
@@ -192,7 +197,7 @@ heatplot bias group_new estimation, ///
 	26 "Share in social class III" 27 "Share in social class IV" 28 "Share in social class V"  ///
 	29 "Share left FT education at 0-14" 30 "Share left FT education at 15" 31 "Share left FT education at 16" ///
 	32 "Share left FT education at 17-19" 33 "Share left FT education at 20+" , noticks labgap(5pt) labsize(vsmall)) ///
-	legend(off) ysize(4) xsize(3)
+	legend(off) ysize(21cm) xsize(18cm)
 	
 graph export "${OUTPUT}/output/graphs/attenuation_bias/common_scale/bias_examples_bw_v2.png", replace width(2000)
 graph export "${OUTPUT}/output/graphs/attenuation_bias/common_scale/bias_examples_bw_v2.pdf", replace
@@ -218,9 +223,30 @@ heatplot bias group_new estimation, ///
 	26 "Share in social class III" 27 "Share in social class IV" 28 "Share in social class V"  ///
 	29 "Share left FT education at 0-14" 30 "Share left FT education at 15" 31 "Share left FT education at 16" ///
 	32 "Share left FT education at 17-19" 33 "Share left FT education at 20+" , noticks labgap(5pt) labsize(vsmall)) ///
-	legend(off) ysize(4) xsize(3)
+	legend(off) ysize(21cm) xsize(18cm)
 	
 graph export "${OUTPUT}/output/graphs/attenuation_bias/common_scale/bias_examples_colour_v2.png", replace width(2000)
 graph export "${OUTPUT}/output/graphs/attenuation_bias/common_scale/bias_examples_colour_v2.pdf", replace
 	
 restore	
+
+
+
+
+*** Export source data:	
+preserve
+
+egen i=group(varname)
+reshape wide bias n, i(i) j(estimation) string
+sort group
+
+gen vargroup="Disease rates - 1st year of life" if vartype==1
+replace vargroup="Demographics - 1st year of life" if vartype==2 
+replace vargroup="Demographics - 1951 census" if vartype==3
+
+keep vargroup varname biasOLS nOLS biasFE nFE
+order vargroup varname biasOLS nOLS biasFE nFE
+
+export delimited "${OUTPUT}/output/graphs/attenuation_bias/common_scale/bias_examples_sourcedata.csv", replace
+
+restore

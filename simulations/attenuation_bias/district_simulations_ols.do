@@ -72,7 +72,7 @@ save "`district_date_data'"
 
 
 *** Load sibling birth location dataset:
-use "${DRIVE}GeographicID/Paper Data Extraction/NV_Papers/Birth locations/dta/sibling_birth_location_data.dta", clear
+use "${DRIVE}GeographicID/Projects/NV_Papers/Birth locations/dta/sibling_birth_location_data.dta", clear
 keep family_id sibling_id birth_date age_gap gid birth_easting birth_northing
 
 *** Set as panel:
@@ -93,7 +93,7 @@ gen double midpoint_easting = (birth_easting + L.birth_easting)/2 if sibling_id=
 replace midpoint_easting = (birth_easting + F.birth_easting)/2 if sibling_id==1
 gen double midpoint_northing = (birth_northing + L.birth_northing)/2 if sibling_id==2
 replace midpoint_northing = (birth_northing + F.birth_northing)/2 if sibling_id==1
-merge m:1 midpoint_easting midpoint_northing using "${DRIVE}GeographicID/Paper Data Extraction/NV_Papers/Birth locations/dta/sibling_midpoint_data.dta", keepusing(midpoint_nearest_gid)
+merge m:1 midpoint_easting midpoint_northing using "${DRIVE}GeographicID/Projects/NV_Papers/Birth locations/dta/sibling_midpoint_data.dta", keepusing(midpoint_nearest_gid)
 drop _merge
 
 drop midpoint_easting midpoint_northing birth_easting birth_northing
@@ -142,6 +142,8 @@ rename gid midpoint_nearest_gid
 
 
 
+*** Limit sample to observations with valid distr, sibdistr and middistr simulated variables:
+keep if simulation_rho0_1!=. & simulation_rho0_1_sibdistr!=. & simulation_rho0_1_middistr!=.
 
 
 
@@ -213,6 +215,9 @@ program define simulation, rclass
 	
 	gen x_obs = `1'
 	
+	replace x=. if x_obs==. // to ensure consistent samples
+	replace x_obs=. if x==. // to ensure consistent samples
+	
 	gen u = x_obs - x
 	
 	gen mse = (x_obs - x)^2
@@ -228,9 +233,11 @@ program define simulation, rclass
 	
 	reg y x
 	return scalar b_unbiased = _coef[x]
+	return scalar n_unbiased = e(N)
 	
 	reg y x_obs
 	return scalar b_biased = _coef[x_obs]
+	return scalar n_biased = e(N)
 	
 	corr x_obs u, cov
 	return scalar lambda = r(cov_12)/r(Var_1)
@@ -271,6 +278,7 @@ foreach var of global sim_variables {
 			tempfile t_`var'_`i'
 			simulate2 varname=r(varname) mse=r(mse) mse_same=r(mse_same) mse_diff=r(mse_diff) b_unbiased=r(b_unbiased) ///
 				b_biased=r(b_biased) lambda=r(lambda) bias=(r(b_biased)-r(b_unbiased)) diff_distr_share=r(diff_distr_share) ///
+				n_unbiased=r(n_unbiased) n_biased=r(n_biased) ///
 				, reps(100) saving("`t_`var'_`i''"): simulation `var'_`i'
 
 			restore	
@@ -356,7 +364,7 @@ esttab bias_by_rho_*, ///
 			
 
 // Latex export:
-esttab bias_by_rho_* using "${OUTPUT}/output/tablefragments/bias_district_simulations_v4.tex", ///
+esttab bias_by_rho_* using "${OUTPUT}/output/tablefragments/bias_district_simulations.tex", ///
 			cells("mean(fmt(2))") nonumber ///
 			collabel(none) mlabel("0\%" "20\%" "40\%" "60\%" "80\%" "100\%", lhs("Spatial autocorrelation (rho)") prefix({) suffix(})) ///
 			mgroups("Variance share from time variation", pattern(1 0 0 0 0 0) ///

@@ -163,6 +163,53 @@ graph export "${OUTPUT}/graphs/pheno_by_coal.png", replace
 graph export "${OUTPUT}/graphs/pheno_by_coal.pdf", replace		
 
 
+// Source data:
+local varnames `" "Years of education" "Body fat" "Height" "BMI" "Overall health" "'
+local i=1
+
+foreach x in educ fat height bmi health {
+	local varname: word `i' of `varnames'
+	if `i'==1 {
+	esttab `x'_coal_all using "${OUTPUT}/graphs/pheno_by_coal_source_data.csv", replace ///
+		cells((b(fmt(5)) se(fmt(5)) _N(fmt(0)))) ///
+		mlabel(none) nonumbers noobs ///
+		collabel("Mean" "Standard error" "N", lhs("Phenotype")) ///
+		coeflabel(c.educ_years@0.coal_area_birth  "`varname'" c.educ_years@1.coal_area_birth  "`varname'") ///
+		labcol2("All sibs: non-coal" "All sibs: coal", title("Sample")) ///
+		rename(c.h_IMPbodyfat_0@0.coal_area_birth c.educ_years@0.coal_area_birth c.h_IMPbodyfat_0@1.coal_area_birth c.educ_years@1.coal_area_birth ///
+		c.h_standingheight_0@0.coal_area_birth c.educ_years@0.coal_area_birth c.h_standingheight_0@1.coal_area_birth c.educ_years@1.coal_area_birth ///
+		c.h_bmi_0@0.coal_area_birth c.educ_years@0.coal_area_birth c.h_bmi_0@1.coal_area_birth c.educ_years@1.coal_area_birth ///
+		c.c_health_0@0.coal_area_birth c.educ_years@0.coal_area_birth c.c_health_0@1.coal_area_birth c.educ_years@1.coal_area_birth)
+	}
+	
+	if `i'!=1 {
+	esttab `x'_coal_all using "${OUTPUT}/graphs/pheno_by_coal_source_data.csv", append ///
+		cells((b(fmt(5)) se(fmt(5)) _N(fmt(0)))) ///
+		mlabel(none) nonumbers noobs ///
+		collabel(none) ///
+		coeflabel(c.educ_years@0.coal_area_birth  "`varname'" c.educ_years@1.coal_area_birth  "`varname'") ///
+		labcol2("All sibs: non-coal" "All sibs: coal") ///
+		rename(c.h_IMPbodyfat_0@0.coal_area_birth c.educ_years@0.coal_area_birth c.h_IMPbodyfat_0@1.coal_area_birth c.educ_years@1.coal_area_birth ///
+		c.h_standingheight_0@0.coal_area_birth c.educ_years@0.coal_area_birth c.h_standingheight_0@1.coal_area_birth c.educ_years@1.coal_area_birth ///
+		c.h_bmi_0@0.coal_area_birth c.educ_years@0.coal_area_birth c.h_bmi_0@1.coal_area_birth c.educ_years@1.coal_area_birth ///
+		c.c_health_0@0.coal_area_birth c.educ_years@0.coal_area_birth c.c_health_0@1.coal_area_birth c.educ_years@1.coal_area_birth)
+	}
+	
+	
+	esttab `x'_coal_same using "${OUTPUT}/graphs/pheno_by_coal_source_data.csv", append ///
+		cells((b(fmt(5)) se(fmt(5)) _N(fmt(0)))) ///
+		mlabel(none) nonumbers noobs ///
+		collabel(none) ///
+		coeflabel(c.educ_years@0.coal_area_birth  "`varname'" c.educ_years@1.coal_area_birth  "`varname'") ///
+		labcol2("Robust sibs: non-coal" "Robust sibs: coal") ///
+		rename(c.h_IMPbodyfat_0@0.coal_area_birth c.educ_years@0.coal_area_birth c.h_IMPbodyfat_0@1.coal_area_birth c.educ_years@1.coal_area_birth ///
+		c.h_standingheight_0@0.coal_area_birth c.educ_years@0.coal_area_birth c.h_standingheight_0@1.coal_area_birth c.educ_years@1.coal_area_birth ///
+		c.h_bmi_0@0.coal_area_birth c.educ_years@0.coal_area_birth c.h_bmi_0@1.coal_area_birth c.educ_years@1.coal_area_birth ///
+		c.c_health_0@0.coal_area_birth c.educ_years@0.coal_area_birth c.c_health_0@1.coal_area_birth c.educ_years@1.coal_area_birth)
+	
+	local i=`i'+1
+}
+
 
 
 
@@ -295,4 +342,68 @@ coefplot 	(educ_migr_all, offset(-0.15) keep(*1.coal_migration_group) color(edkb
 
 		
 graph export "${OUTPUT}/graphs/pheno_by_migration.png", replace
-graph export "${OUTPUT}/graphs/pheno_by_migration.pdf", replace		
+graph export "${OUTPUT}/graphs/pheno_by_migration.pdf", replace	
+
+
+// Source data:
+local varnames `" "Years of education" "Body fat" "Height" "BMI" "Overall health" "'
+local i=1
+
+foreach x in educ fat height bmi health {
+	local varname: word `i' of `varnames'
+	if `i'==1 {
+	esttab `x'_migr_all using "${OUTPUT}/graphs/pheno_by_migration_source_data.csv", replace ///
+		cells((b(fmt(5)) se(fmt(5)) _N(fmt(0)))) ///
+		mlabel(none) nonumbers noobs ///
+		collabel("Mean" "Standard error" "N", lhs("Phenotype")) ///
+		coeflabel(c.educ_years@1.coal_migration_group  "`varname'" c.educ_years@2.coal_migration_group  "`varname'" ///
+		c.educ_years@3.coal_migration_group  "`varname'" c.educ_years@4.coal_migration_group  "`varname'") ///
+		labcol2("All sibs: C -> NC" "All sibs: NC" "All sibs: NC -> C" "All sibs: C", title("Sample")) ///
+		rename(c.h_IMPbodyfat_0@1.coal_migration_group c.educ_years@1.coal_migration_group c.h_IMPbodyfat_0@2.coal_migration_group c.educ_years@2.coal_migration_group ///
+		c.h_IMPbodyfat_0@3.coal_migration_group c.educ_years@3.coal_migration_group c.h_IMPbodyfat_0@4.coal_migration_group c.educ_years@4.coal_migration_group ///
+		c.h_standingheight_0@1.coal_migration_group c.educ_years@1.coal_migration_group c.h_standingheight_0@2.coal_migration_group c.educ_years@2.coal_migration_group ///
+		c.h_standingheight_0@3.coal_migration_group c.educ_years@3.coal_migration_group c.h_standingheight_0@4.coal_migration_group c.educ_years@4.coal_migration_group ///
+		c.h_bmi_0@1.coal_migration_group c.educ_years@1.coal_migration_group c.h_bmi_0@2.coal_migration_group c.educ_years@2.coal_migration_group ///
+		c.h_bmi_0@3.coal_migration_group c.educ_years@3.coal_migration_group c.h_bmi_0@4.coal_migration_group c.educ_years@4.coal_migration_group ///
+		c.c_health_0@1.coal_migration_group c.educ_years@1.coal_migration_group c.c_health_0@2.coal_migration_group c.educ_years@2.coal_migration_group ///
+		c.c_health_0@3.coal_migration_group c.educ_years@3.coal_migration_group c.c_health_0@4.coal_migration_group c.educ_years@4.coal_migration_group)
+		
+	}
+	
+	if `i'!=1 {
+	esttab `x'_migr_all using "${OUTPUT}/graphs/pheno_by_migration_source_data.csv", append ///
+		cells((b(fmt(5)) se(fmt(5)) _N(fmt(0)))) ///
+		mlabel(none) nonumbers noobs ///
+		collabel(none) ///
+		coeflabel(c.educ_years@1.coal_migration_group  "`varname'" c.educ_years@2.coal_migration_group  "`varname'" ///
+		c.educ_years@3.coal_migration_group  "`varname'" c.educ_years@4.coal_migration_group  "`varname'") ///
+		labcol2("All sibs: C -> NC" "All sibs: NC" "All sibs: NC -> C" "All sibs: C") ///
+		rename(c.h_IMPbodyfat_0@1.coal_migration_group c.educ_years@1.coal_migration_group c.h_IMPbodyfat_0@2.coal_migration_group c.educ_years@2.coal_migration_group ///
+		c.h_IMPbodyfat_0@3.coal_migration_group c.educ_years@3.coal_migration_group c.h_IMPbodyfat_0@4.coal_migration_group c.educ_years@4.coal_migration_group ///
+		c.h_standingheight_0@1.coal_migration_group c.educ_years@1.coal_migration_group c.h_standingheight_0@2.coal_migration_group c.educ_years@2.coal_migration_group ///
+		c.h_standingheight_0@3.coal_migration_group c.educ_years@3.coal_migration_group c.h_standingheight_0@4.coal_migration_group c.educ_years@4.coal_migration_group ///
+		c.h_bmi_0@1.coal_migration_group c.educ_years@1.coal_migration_group c.h_bmi_0@2.coal_migration_group c.educ_years@2.coal_migration_group ///
+		c.h_bmi_0@3.coal_migration_group c.educ_years@3.coal_migration_group c.h_bmi_0@4.coal_migration_group c.educ_years@4.coal_migration_group ///
+		c.c_health_0@1.coal_migration_group c.educ_years@1.coal_migration_group c.c_health_0@2.coal_migration_group c.educ_years@2.coal_migration_group ///
+		c.c_health_0@3.coal_migration_group c.educ_years@3.coal_migration_group c.c_health_0@4.coal_migration_group c.educ_years@4.coal_migration_group)
+	}
+	
+	
+	esttab `x'_migr_same using "${OUTPUT}/graphs/pheno_by_migration_source_data.csv", append ///
+		cells((b(fmt(5)) se(fmt(5)) _N(fmt(0)))) ///
+		mlabel(none) nonumbers noobs ///
+		collabel(none) ///
+		coeflabel(c.educ_years@1.coal_migration_group  "`varname'" c.educ_years@2.coal_migration_group  "`varname'" ///
+		c.educ_years@3.coal_migration_group  "`varname'" c.educ_years@4.coal_migration_group  "`varname'") ///
+		labcol2("Robust sibs: C -> NC" "Robust sibs: NC" "Robust sibs: NC -> C" "Robust sibs: C") ///
+		rename(c.h_IMPbodyfat_0@1.coal_migration_group c.educ_years@1.coal_migration_group c.h_IMPbodyfat_0@2.coal_migration_group c.educ_years@2.coal_migration_group ///
+		c.h_IMPbodyfat_0@3.coal_migration_group c.educ_years@3.coal_migration_group c.h_IMPbodyfat_0@4.coal_migration_group c.educ_years@4.coal_migration_group ///
+		c.h_standingheight_0@1.coal_migration_group c.educ_years@1.coal_migration_group c.h_standingheight_0@2.coal_migration_group c.educ_years@2.coal_migration_group ///
+		c.h_standingheight_0@3.coal_migration_group c.educ_years@3.coal_migration_group c.h_standingheight_0@4.coal_migration_group c.educ_years@4.coal_migration_group ///
+		c.h_bmi_0@1.coal_migration_group c.educ_years@1.coal_migration_group c.h_bmi_0@2.coal_migration_group c.educ_years@2.coal_migration_group ///
+		c.h_bmi_0@3.coal_migration_group c.educ_years@3.coal_migration_group c.h_bmi_0@4.coal_migration_group c.educ_years@4.coal_migration_group ///
+		c.c_health_0@1.coal_migration_group c.educ_years@1.coal_migration_group c.c_health_0@2.coal_migration_group c.educ_years@2.coal_migration_group ///
+		c.c_health_0@3.coal_migration_group c.educ_years@3.coal_migration_group c.c_health_0@4.coal_migration_group c.educ_years@4.coal_migration_group)
+	
+	local i=`i'+1
+}	

@@ -20,7 +20,7 @@ set seed 17041059
 
 
 *** Load sibling birth location dataset:
-use "${DRIVE}GeographicID/Paper Data Extraction/NV_Papers/Birth locations/dta/sibling_birth_location_data.dta", clear
+use "${DRIVE}GeographicID/Projects/NV_Papers/Birth locations/dta/sibling_birth_location_data.dta", clear
 
 
 
@@ -43,7 +43,7 @@ gen double midpoint_easting = (birth_easting + L.birth_easting)/2 if sibling_id=
 replace midpoint_easting = (birth_easting + F.birth_easting)/2 if sibling_id==1
 gen double midpoint_northing = (birth_northing + L.birth_northing)/2 if sibling_id==2
 replace midpoint_northing = (birth_northing + F.birth_northing)/2 if sibling_id==1
-merge m:1 midpoint_easting midpoint_northing using "${DRIVE}GeographicID/Paper Data Extraction/NV_Papers/Birth locations/dta/sibling_midpoint_data.dta", keepusing(midpoint_nearest_gid)
+merge m:1 midpoint_easting midpoint_northing using "${DRIVE}GeographicID/Projects/NV_Papers/Birth locations/dta/sibling_midpoint_data.dta", keepusing(midpoint_nearest_gid)
 drop _merge
 
 drop midpoint_easting midpoint_northing birth_easting birth_northing
@@ -51,17 +51,17 @@ drop midpoint_easting midpoint_northing birth_easting birth_northing
 
 
 *** Merge in data based on own district:
-merge m:1 gid birth_year birth_month using "${DRIVE}GeographicID/Paper Data Extraction/NV_Papers/Disease data/dta/1951_weighted_yfb_disease_district_panel.dta", keepusing(measles_1 scarlet_fever_1 w_cough_1 acute_polio_non_paralytic_1 acute_polio_paralytic_1 diphtheria_1 pneumonia_1 tuberculosis_respiratory_1)
+merge m:1 gid birth_year birth_month using "${DRIVE}GeographicID/Projects/NV_Papers/Disease data/dta/1951_weighted_yfb_disease_district_panel.dta", keepusing(measles_1 scarlet_fever_1 w_cough_1 acute_polio_non_paralytic_1 acute_polio_paralytic_1 diphtheria_1 pneumonia_1 tuberculosis_respiratory_1)
 drop if _merge==2
 drop _merge
 
-merge m:1 gid birth_year birth_month using "${DRIVE}GeographicID/Paper Data Extraction/NV_Papers/Disease data/dta/1951_weighted_yfb_vitals_district_panel.dta", keepusing(births_total_1 deaths_1 deathsunderoneyear_1 estimated_population_1 illegitimate_births_female_1 illegitimate_births_male_1 stillbirths_1)
+merge m:1 gid birth_year birth_month using "${DRIVE}GeographicID/Projects/NV_Papers/Disease data/dta/1951_weighted_yfb_vitals_district_panel.dta", keepusing(births_total_1 deaths_1 deathsunderoneyear_1 estimated_population_1 illegitimate_births_female_1 illegitimate_births_male_1 stillbirths_1)
 replace stillbirths_1=. if birth_date<=tm(1947m12)
 drop if _merge==2
 drop _merge
 
 drop census51_*
-merge m:1 gid using "${DRIVE}GeographicID/Paper Data Extraction/NV_Papers/Disease data/dta/weighted_1951census_demographics.dta", keepusing(census51_social_class*_sh census51_density_*_pop_sh census51_age_left_ed_*_sh)
+merge m:1 gid using "${DRIVE}GeographicID/Projects/NV_Papers/Disease data/dta/weighted_1951census_demographics.dta", keepusing(census51_social_class*_sh census51_density_*_pop_sh census51_age_left_ed_*_sh)
 rename census51_* c51_*
 drop if _merge==2
 drop _merge
@@ -91,16 +91,16 @@ drop measles_1 scarlet_fever_1 w_cough_1 acute_polio_non_paralytic_1 acute_polio
 rename gid original_gid
 rename sibling_gid gid
 
-merge m:1 gid birth_year birth_month using "${DRIVE}GeographicID/Paper Data Extraction/NV_Papers/Disease data/dta/1951_weighted_yfb_disease_district_panel.dta", keepusing(measles_1 scarlet_fever_1 w_cough_1 acute_polio_non_paralytic_1 acute_polio_paralytic_1 diphtheria_1 pneumonia_1 tuberculosis_respiratory_1)
+merge m:1 gid birth_year birth_month using "${DRIVE}GeographicID/Projects/NV_Papers/Disease data/dta/1951_weighted_yfb_disease_district_panel.dta", keepusing(measles_1 scarlet_fever_1 w_cough_1 acute_polio_non_paralytic_1 acute_polio_paralytic_1 diphtheria_1 pneumonia_1 tuberculosis_respiratory_1)
 drop if _merge==2
 drop _merge
 
-merge m:1 gid birth_year birth_month using "${DRIVE}GeographicID/Paper Data Extraction/NV_Papers/Disease data/dta/1951_weighted_yfb_vitals_district_panel.dta", keepusing(births_total_1 deaths_1 deathsunderoneyear_1 estimated_population_1 illegitimate_births_female_1 illegitimate_births_male_1 stillbirths_1)
+merge m:1 gid birth_year birth_month using "${DRIVE}GeographicID/Projects/NV_Papers/Disease data/dta/1951_weighted_yfb_vitals_district_panel.dta", keepusing(births_total_1 deaths_1 deathsunderoneyear_1 estimated_population_1 illegitimate_births_female_1 illegitimate_births_male_1 stillbirths_1)
 replace stillbirths_1=. if birth_date<=tm(1947m12)
 drop if _merge==2
 drop _merge
 
-merge m:1 gid using "${DRIVE}GeographicID/Paper Data Extraction/NV_Papers/Disease data/dta/weighted_1951census_demographics.dta", keepusing(census51_social_class*_sh census51_density_*_pop_sh census51_age_left_ed_*_sh)
+merge m:1 gid using "${DRIVE}GeographicID/Projects/NV_Papers/Disease data/dta/weighted_1951census_demographics.dta", keepusing(census51_social_class*_sh census51_density_*_pop_sh census51_age_left_ed_*_sh)
 rename census51_* c51_*_sibd
 drop if _merge==2
 drop _merge
@@ -131,16 +131,16 @@ rename gid sibling_gid
 *** Merge in data based on midpoint district between sibling's birth locations:
 rename midpoint_nearest_gid gid
 
-merge m:1 gid birth_year birth_month using "${DRIVE}GeographicID/Paper Data Extraction/NV_Papers/Disease data/dta/1951_weighted_yfb_disease_district_panel.dta", keepusing(measles_1 scarlet_fever_1 w_cough_1 acute_polio_non_paralytic_1 acute_polio_paralytic_1 diphtheria_1 pneumonia_1 tuberculosis_respiratory_1)
+merge m:1 gid birth_year birth_month using "${DRIVE}GeographicID/Projects/NV_Papers/Disease data/dta/1951_weighted_yfb_disease_district_panel.dta", keepusing(measles_1 scarlet_fever_1 w_cough_1 acute_polio_non_paralytic_1 acute_polio_paralytic_1 diphtheria_1 pneumonia_1 tuberculosis_respiratory_1)
 drop if _merge==2
 drop _merge
 
-merge m:1 gid birth_year birth_month using "${DRIVE}GeographicID/Paper Data Extraction/NV_Papers/Disease data/dta/1951_weighted_yfb_vitals_district_panel.dta", keepusing(births_total_1 deaths_1 deathsunderoneyear_1 estimated_population_1 illegitimate_births_female_1 illegitimate_births_male_1 stillbirths_1)
+merge m:1 gid birth_year birth_month using "${DRIVE}GeographicID/Projects/NV_Papers/Disease data/dta/1951_weighted_yfb_vitals_district_panel.dta", keepusing(births_total_1 deaths_1 deathsunderoneyear_1 estimated_population_1 illegitimate_births_female_1 illegitimate_births_male_1 stillbirths_1)
 replace stillbirths_1=. if birth_date<=tm(1947m12)
 drop if _merge==2
 drop _merge
 
-merge m:1 gid using "${DRIVE}GeographicID/Paper Data Extraction/NV_Papers/Disease data/dta/weighted_1951census_demographics.dta", keepusing(census51_social_class*_sh census51_density_*_pop_sh census51_age_left_ed_*_sh)
+merge m:1 gid using "${DRIVE}GeographicID/Projects/NV_Papers/Disease data/dta/weighted_1951census_demographics.dta", keepusing(census51_social_class*_sh census51_density_*_pop_sh census51_age_left_ed_*_sh)
 rename census51_* c51_*_midd
 drop if _merge==2
 drop _merge
@@ -231,6 +231,9 @@ program define simulation, rclass
 	
 	gen x_obs = `1'
 	
+	replace x=. if x_obs==. // to ensure consistent samples
+	replace x_obs=. if x==. // to ensure consistent samples
+	
 	gen u = x_obs - x
 	
 	gen mse = (x_obs - x)^2
@@ -246,9 +249,11 @@ program define simulation, rclass
 	
 	reg y x
 	return scalar b_unbiased = _coef[x]
+	return scalar n_unbiased = e(N)
 	
 	reg y x_obs
 	return scalar b_biased = _coef[x_obs]
+	return scalar n_biased = e(N)
 	
 	corr x_obs u, cov
 	return scalar lambda = r(cov_12)/r(Var_1)
@@ -269,6 +274,7 @@ foreach var of varlist measles_r_age0 scarlet_fever_age0 w_cough_r_age0 polio_no
 		tempfile t_`var'
 		simulate2 varname=r(varname) mse=r(mse) mse_same=r(mse_same) mse_diff=r(mse_diff) b_unbiased=r(b_unbiased) ///
 			b_biased=r(b_biased) lambda=r(lambda) bias=(r(b_biased)-r(b_unbiased)) diff_distr_share=r(diff_distr_share) ///
+			n_unbiased=r(n_unbiased) n_biased=r(n_biased) ///
 			, reps(1000) saving("`t_`var''"): simulation `var'
 
 	restore	
@@ -351,7 +357,7 @@ esttab bias, ///
 			
 
 // Latex export:
-esttab bias using "${OUTPUT}/output/tablefragments/bias_examples_v4.tex", ///
+esttab bias using "${OUTPUT}/output/tablefragments/bias_examples.tex", ///
 			cells("mean(fmt(2))") nonumber ///
 			collabel(none) mlabel("Attenuation bias (\%)", prefix({) suffix(})) ///
 			coeflabel(`label') ///

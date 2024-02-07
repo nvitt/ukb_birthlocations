@@ -115,6 +115,11 @@ rename gid midpoint_nearest_gid
 
 
 
+*** Limit sample to observations with valid distr, sibdistr and middistr simulated variables:
+keep if simulation_rho0_1!=. & simulation_rho0_1_sibdistr!=. & simulation_rho0_1_middistr!=.
+
+
+
 
 
 
@@ -193,13 +198,17 @@ program define simulation, rclass
 	replace district_id = sibling_gid if district_error==1 & both_sib==0
 	replace district_id = midpoint_nearest_gid if district_error==1 & both_sib==1
 	
+	replace fe=. if original_gid==. | district_id==. // to ensure consistent samples
+	
 	gen y = `beta'*x + fe + rnormal(0,1)
 	
 	reghdfe y x, absorb(i.district_id)
 	return scalar b_unbiased = _coef[x]
+	return scalar n_unbiased = e(N)
 	
 	reghdfe y x, absorb(i.original_gid)
 	return scalar b_biased = _coef[x]
+	return scalar n_biased = e(N)
 	
 	
 	gen diff=(district_error==1 | L.district_error==1) if sibling_id==2
@@ -245,6 +254,7 @@ foreach var of global sim_variables {
 				tempfile t_`var_name'_`r_name'_`sd_name'
 				simulate2 varname=r(varname) r=r(r) sd_x=r(sd_x) sd_fe=r(sd_fe) b_unbiased=r(b_unbiased) ///
 				b_biased=r(b_biased) bias=(r(b_biased)-r(b_unbiased)) diff_distr_share=r(diff_distr_share) corr=r(corr) sd_fe_error=r(sd_fe_error) ///
+				n_unbiased=r(n_unbiased) n_biased=r(n_biased) ///
 				, reps(25) saving("`t_`var_name'_`r_name'_`sd_name''"): simulation `var', beta(1) r(`r') sd_x(1) sd_fe(`sd_fe')
 				
 				restore	

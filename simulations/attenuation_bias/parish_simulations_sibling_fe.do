@@ -12,9 +12,8 @@ global OUTPUT	"C:/Users/pk20062/Dropbox/DONNI - UKB birth location accuracy/"
 
 
 
-
 *** Set seed:
-set seed 14042128
+set seed 17041143
 
 
 
@@ -34,14 +33,14 @@ save "`birth_date_fe'"
 
 
 
-*** Load simulated district-level data:
-insheet using "${OUTPUT}gis_data/simulations/district_spatial_simulations.txt", clear
+*** Load simulated parish-level data:
+insheet using "${OUTPUT}gis_data/simulations/parish_spatial_simulations.txt", clear
 
-rename g_unit gid
+rename g_unit pid
 
 expand 395
 
-bysort gid: gen birth_date=-274+_n
+bysort pid: gen birth_date=-274+_n
 
 merge m:1 birth_date using "`birth_date_fe'"
 drop _merge
@@ -56,11 +55,11 @@ foreach var of varlist rho* {
 		local i=`i'+1
 }
 
-order gid birth_date
-sort gid birth_date
+order pid birth_date
+sort pid birth_date
 
-tempfile district_date_data
-save "`district_date_data'"
+tempfile parish_date_data
+save "`parish_date_data'"
 
 
 
@@ -73,7 +72,8 @@ save "`district_date_data'"
 
 *** Load sibling birth location dataset:
 use "${DRIVE}GeographicID/Projects/NV_Papers/Birth locations/dta/sibling_birth_location_data.dta", clear
-keep family_id sibling_id birth_date age_gap gid birth_easting birth_northing
+keep family_id sibling_id birth_date age_gap pid birth_easting birth_northing
+
 
 *** Set as panel:
 sort family_id sibling_id
@@ -83,25 +83,25 @@ xtset family_id sibling_id
 
 
 
-*** Sibling's district:
-gen sibling_gid = L.gid if sibling_id==2
-replace sibling_gid = F.gid if sibling_id==1
+*** Sibling's parish:
+gen sibling_pid = L.pid if sibling_id==2
+replace sibling_pid = F.pid if sibling_id==1
 
 
-*** Merge in nearest district to midpoint between sibling birth locations:
+*** Merge in nearest parish to midpoint between sibling birth locations:
 gen double midpoint_easting = (birth_easting + L.birth_easting)/2 if sibling_id==2
 replace midpoint_easting = (birth_easting + F.birth_easting)/2 if sibling_id==1
 gen double midpoint_northing = (birth_northing + L.birth_northing)/2 if sibling_id==2
 replace midpoint_northing = (birth_northing + F.birth_northing)/2 if sibling_id==1
-merge m:1 midpoint_easting midpoint_northing using "${DRIVE}GeographicID/Projects/NV_Papers/Birth locations/dta/sibling_midpoint_data.dta", keepusing(midpoint_nearest_gid)
+merge m:1 midpoint_easting midpoint_northing using "${DRIVE}GeographicID/Projects/NV_Papers/Birth locations/dta/sibling_midpoint_data.dta", keepusing(midpoint_nearest_pid)
 drop _merge
 
 drop midpoint_easting midpoint_northing birth_easting birth_northing
 
 
 
-*** Merge in simulated district-level data based on own district:
-merge m:1 gid birth_date using "`district_date_data'" // not matched districts from birth location data are island districts without direct neighbours for which we could not simulate spatial data AND Fife district (10032829) which covers multiple districts in spatial data(?!)
+*** Merge in simulated parish-level data based on own parish:
+merge m:1 pid birth_date using "`parish_date_data'" // not matched parishes from birth location data are island parishes without direct neighbours for which we could not simulate spatial data
 drop if _merge==2
 drop _merge
 
@@ -111,52 +111,55 @@ rename rho* simulation_rho*
 
 
 
-*** Merge in simulated district-level data based on sibling's district:
-rename gid original_gid
-rename sibling_gid gid
+*** Merge in simulated parish-level data based on sibling's parish:
+rename pid original_pid
+rename sibling_pid pid
 
-merge m:1 gid birth_date using "`district_date_data'" // not matched districts from birth location data are island districts without direct neighbours for which we could not simulate spatial data AND Fife district (10032829) which covers multiple districts in spatial data(?!)
+merge m:1 pid birth_date using "`parish_date_data'" // not matched parishes from birth location data are island parishes without direct neighbours for which we could not simulate spatial data
 drop if _merge==2
 drop _merge
 
-rename rho* simulation_rho*_sibdistr
+rename rho* simulation_rho*_sibpar
 
 
-rename gid sibling_gid 
+rename pid sibling_pid 
 
 
 
 
 
-*** Merge in simulated district-level data based on midpoint between sibling's birth locations:
-rename midpoint_nearest_gid gid
+*** Merge in simulated parish-level data based on midpoint between sibling's birth locations:
+rename midpoint_nearest_pid pid
 
-merge m:1 gid birth_date using "`district_date_data'" // not matched districts from birth location data are island districts without direct neighbours for which we could not simulate spatial data AND Fife district (10032829) which covers multiple districts in spatial data(?!)
+merge m:1 pid birth_date using "`parish_date_data'" // not matched parishes from birth location data are island parishes without direct neighbours for which we could not simulate spatial data
 drop if _merge==2
 drop _merge
 
-rename rho* simulation_rho*_middistr
+rename rho* simulation_rho*_midpar
 
 
-rename gid midpoint_nearest_gid
-
-
-
-*** Limit sample to observations with valid distr, sibdistr and middistr simulated variables:
-keep if simulation_rho0_1!=. & simulation_rho0_1_sibdistr!=. & simulation_rho0_1_middistr!=.
+rename pid midpoint_nearest_pid
 
 
 
 
 
-*** Normalize simulated data:
+*** Limit sample to observations with valid par, sibpar and midpar simulated variables:
+keep if simulation_rho0_1!=. & simulation_rho0_1_sibpar!=. & simulation_rho0_1_midpar!=.
+
+
+
+
+
+
+*** Normalize simulated data and create measurement error variables:
 sum simulation_rho*
 foreach var of varlist simulation_rho* {
-	if strpos("`var'","_sibdistr") == 0 & strpos("`var'","_middistr") == 0 {
+	if strpos("`var'","_sibpar") == 0 & strpos("`var'","_midpar") == 0 {
 		qui sum `var'
 		replace `var' = (`var' - r(mean)) / (r(sd))
-		replace `var'_sibdistr = (`var'_sibdistr - r(mean)) / (r(sd))
-		replace `var'_middistr = (`var'_middistr - r(mean)) / (r(sd))
+		replace `var'_sibpar = (`var'_sibpar - r(mean)) / (r(sd))
+		replace `var'_midpar = (`var'_midpar - r(mean)) / (r(sd))
 	}
 }
 sum simulation_rho*
@@ -171,12 +174,12 @@ sum simulation_rho*
 
 
 
-
-*** Simulate with individual probability of incorrect district p = 0.158 and annual move probability q = 0.009
-keep if  simulation_rho0_1!=. & simulation_rho0_1_sibdistr!=.
+*** Simulate with individual probability of incorrect parish p = 0.168 and annual move probability q = 0.009
+keep if simulation_rho0_1!=. & simulation_rho0_1_sibpar!=.
 sort family_id sibling_id
-gen error_prob = (2*0.158-0.158^2) / (2*0.158 - 0.158^2 + 0.009 * age_gap) if original_gid!=sibling_gid
-gen both_error_prob = 0.158^2 / (2*0.158-0.158^2) if original_gid!=sibling_gid
+gen error_prob = (2*0.168-0.168^2) / (2*0.168 - 0.168^2 + 0.009 * age_gap) if original_pid!=sibling_pid
+gen both_error_prob = 0.168^2 / (2*0.168-0.168^2) if original_pid!=sibling_pid
+
 
 capture program drop simulation
 program define simulation, rclass
@@ -185,27 +188,27 @@ program define simulation, rclass
 		
 	return local varname "`1'"
 		
-	cap drop district_error both_sib which_sib x y x_obs diff
+	cap drop parish_error both_sib which_sib x y x_obs diff
 	
-	gen district_error = rbinomial(1,error_prob) if sibling_id==2 & original_gid!=sibling_gid
-	replace district_error = 1 if district_error==. & error_prob==1
+	gen parish_error = rbinomial(1,error_prob) if sibling_id==2 & original_pid!=sibling_pid
+	replace parish_error = 1 if parish_error==. & error_prob==1
 	
-	gen both_sib = rbinomial(1,both_error_prob) if district_error==1
+	gen both_sib = rbinomial(1,both_error_prob) if parish_error==1
 	replace both_sib = F.both_sib if sibling_id==1
 	
-	gen which_sib = 1+rbinomial(1,0.5) if district_error==1 & both_sib==0
+	gen which_sib = 1+rbinomial(1,0.5) if parish_error==1 & both_sib==0
 	
-	replace district_error = 1 if F.both_sib==1 & sibling_id==1
-	replace district_error = 1 if F.district_error==1 & F.which_sib==1 & sibling_id==1
-	replace district_error = 0 if F.district_error==1 & F.which_sib==2 & sibling_id==1
-	replace district_error = 0 if F.district_error==0 & sibling_id==1
-	replace district_error = 0 if district_error==1 & which_sib==1 & sibling_id==2
-	replace district_error = 0 if original_gid==sibling_gid
+	replace parish_error = 1 if F.both_sib==1 & sibling_id==1
+	replace parish_error = 1 if F.parish_error==1 & F.which_sib==1 & sibling_id==1
+	replace parish_error = 0 if F.parish_error==1 & F.which_sib==2 & sibling_id==1
+	replace parish_error = 0 if F.parish_error==0 & sibling_id==1
+	replace parish_error = 0 if parish_error==1 & which_sib==1 & sibling_id==2
+	replace parish_error = 0 if original_pid==sibling_pid
 	
 	gen x = `1'
 	
-	replace x = `1'_sibd if district_error==1 & both_sib==0
-	replace x = `1'_midd if district_error==1 & both_sib==1
+	replace x = `1'_sibp if parish_error==1 & both_sib==0
+	replace x = `1'_midp if parish_error==1 & both_sib==1
 	
 	gen y = x + rnormal(0,1)
 	
@@ -222,9 +225,9 @@ program define simulation, rclass
 	return scalar b_biased = _coef[x_obs]
 	return scalar n_biased = e(N)
 	
-	gen diff=(district_error==1 | L.district_error==1) if sibling_id==2
+	gen diff=(parish_error==1 | L.parish_error==1) if sibling_id==2
 	sum diff
-	return scalar diff_distr_share = r(mean)
+	return scalar diff_par_share = r(mean)
 	
 end
 
@@ -238,7 +241,7 @@ di "$sim_variables"
 
 * Run simulations and save results in temporary files:
 foreach var of global sim_variables {
-	if strpos("`var'","_sibdistr") == 0 &  strpos("`var'","_middistr") == 0 {
+	if strpos("`var'","_sibpar") == 0 & strpos("`var'","_midpar") == 0 {
 		
 		local fe_var = subinstr("`var'","simulation_","fe_",.)
 		
@@ -246,17 +249,17 @@ foreach var of global sim_variables {
 			preserve
 
 			gen `var'_`i' = sqrt((10-`i')/10)*`var' + sqrt(`i'/10)*`fe_var'
-			gen `var'_`i'_sibd = sqrt((10-`i')/10)*`var'_sibdistr + sqrt(`i'/10)*`fe_var'
-			gen `var'_`i'_midd = sqrt((10-`i')/10)*`var'_middistr + sqrt(`i'/10)*`fe_var'
+			gen `var'_`i'_sibp = sqrt((10-`i')/10)*`var'_sibpar + sqrt(`i'/10)*`fe_var'
+			gen `var'_`i'_midp = sqrt((10-`i')/10)*`var'_midpar + sqrt(`i'/10)*`fe_var'
 			
 			qui sum `var'_`i'
 			replace `var'_`i' = (`var'_`i' - r(mean)) / (r(sd))
-			replace `var'_`i'_sibd = (`var'_`i'_sibd - r(mean)) / (r(sd))
-			replace `var'_`i'_midd = (`var'_`i'_midd - r(mean)) / (r(sd))
+			replace `var'_`i'_sibp = (`var'_`i'_sibp - r(mean)) / (r(sd))
+			replace `var'_`i'_midp = (`var'_`i'_midp - r(mean)) / (r(sd))
 			
 			tempfile t_`var'_`i'
 			simulate2 varname=r(varname) b_unbiased=r(b_unbiased) ///
-				b_biased=r(b_biased) bias=(r(b_biased)-r(b_unbiased)) diff_distr_share=r(diff_distr_share) ///
+				b_biased=r(b_biased) bias=(r(b_biased)-r(b_unbiased)) diff_par_share=r(diff_par_share) ///
 				n_unbiased=r(n_unbiased) n_biased=r(n_biased) ///
 				, reps(100) saving("`t_`var'_`i''"): simulation `var'_`i'
 
@@ -269,7 +272,7 @@ foreach var of global sim_variables {
 * Combine simulation results:
 clear
 foreach var of global sim_variables {
-	if strpos("`var'","_sibdistr") == 0 & strpos("`var'","_middistr") == 0 {
+	if strpos("`var'","_sibpar") == 0 & strpos("`var'","_midpar") == 0 {
 		forvalues i=0(2)10 {
 			append using "`t_`var'_`i''"
 		}
@@ -293,16 +296,16 @@ drop varname
 
 
 *** Save simulation output:
-save "${OUTPUT}/output/simulations/district_simulations_sibling_error_sibling_fe.dta", replace
+save "${OUTPUT}/output/simulations/parish_simulations_sibling_error_sibling_fe.dta", replace
 
 
 *** Summary of the simulation output:
-tabstat b_unbiased b_biased bias diff_distr_share if temporal_variance_percentage==0, by(rho) stats(mean)
-tabstat b_unbiased b_biased bias diff_distr_share if temporal_variance_percentage==20, by(rho) stats(mean)
-tabstat b_unbiased b_biased bias diff_distr_share if temporal_variance_percentage==40, by(rho) stats(mean)
-tabstat b_unbiased b_biased bias diff_distr_share if temporal_variance_percentage==60, by(rho) stats(mean)
-tabstat b_unbiased b_biased bias diff_distr_share if temporal_variance_percentage==80, by(rho) stats(mean)
-tabstat b_unbiased b_biased bias diff_distr_share if temporal_variance_percentage==100, by(rho) stats(mean)
+tabstat b_unbiased b_biased bias diff_par_share if temporal_variance_percentage==0, by(rho) stats(mean)
+tabstat b_unbiased b_biased bias diff_par_share if temporal_variance_percentage==20, by(rho) stats(mean)
+tabstat b_unbiased b_biased bias diff_par_share if temporal_variance_percentage==40, by(rho) stats(mean)
+tabstat b_unbiased b_biased bias diff_par_share if temporal_variance_percentage==60, by(rho) stats(mean)
+tabstat b_unbiased b_biased bias diff_par_share if temporal_variance_percentage==80, by(rho) stats(mean)
+tabstat b_unbiased b_biased bias diff_par_share if temporal_variance_percentage==100, by(rho) stats(mean)
 
 replace bias=bias*(-100)
 tostring rho, gen(rho_str) usedisplayformat
@@ -343,7 +346,7 @@ esttab bias_by_rho_*, ///
 			
 
 // Latex export:
-esttab bias_by_rho_* using "${OUTPUT}/output/tablefragments/bias_district_simulations_sibling_fe.tex", ///
+esttab bias_by_rho_* using "${OUTPUT}/output/tablefragments/bias_parish_simulations_sibling_fe.tex", ///
 			cells("mean(fmt(2))") nonumber ///
 			collabel(none) mlabel("0\%" "20\%" "40\%" "60\%" "80\%" "100\%", lhs("Spatial autocorrelation (rho)") prefix({) suffix(})) ///
 			mgroups("Variance share from time variation", pattern(1 0 0 0 0 0) ///

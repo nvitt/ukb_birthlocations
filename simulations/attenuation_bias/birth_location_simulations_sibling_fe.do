@@ -48,7 +48,7 @@ save "`ukb_birth_locations'"
 
 
 *** Load unique midpoint locations between siblings:
-use "${DRIVE}GeographicID/Paper Data Extraction/NV_Papers/Birth locations/dta/sibling_midpoint_data.dta", clear
+use "${DRIVE}GeographicID/Projects/NV_Papers/Birth locations/dta/sibling_midpoint_data.dta", clear
 keep midpoint_nearest_easting midpoint_nearest_northing
 rename midpoint_nearest_easting easting
 rename midpoint_nearest_northing northing
@@ -102,7 +102,7 @@ save "`loc_date_data'"
 
 
 *** Load sibling birth location dataset:
-use "${DRIVE}GeographicID/Paper Data Extraction/NV_Papers/Birth locations/dta/sibling_birth_location_data.dta", clear
+use "${DRIVE}GeographicID/Projects/NV_Papers/Birth locations/dta/sibling_birth_location_data.dta", clear
 keep family_id sibling_id birth_date age_gap birth_easting birth_northing
 
 
@@ -127,7 +127,7 @@ replace sibling_northing = F.birth_northing if sibling_id==1
 *** Merge in nearest grid coordinates to midpoint between sibling birth locations:
 gen midpoint_easting = (birth_easting + sibling_easting)/2
 gen midpoint_northing = (birth_northing + sibling_northing)/2
-merge m:1 midpoint_easting midpoint_northing using "${DRIVE}GeographicID/Paper Data Extraction/NV_Papers/Birth locations/dta/sibling_midpoint_data.dta", keepusing(midpoint_nearest_easting midpoint_nearest_northing)
+merge m:1 midpoint_easting midpoint_northing using "${DRIVE}GeographicID/Projects/NV_Papers/Birth locations/dta/sibling_midpoint_data.dta", keepusing(midpoint_nearest_easting midpoint_nearest_northing)
 drop _merge
 
 drop midpoint_easting midpoint_northing
@@ -184,6 +184,10 @@ rename birth_northing midpoint_nearest_northing
 
 
 
+
+
+*** Limit sample to observations with valid loc, sibloc and midloc simulated variables:
+keep if simulation_rho0_1!=. & simulation_rho0_1_sibloc!=. & simulation_rho0_1_midloc!=.
 
 
 
@@ -251,11 +255,16 @@ program define simulation, rclass
 	
 	gen x_obs = `1'
 	
+	replace x=. if x_obs==. // to ensure consistent samples
+	replace x_obs=. if x==. // to ensure consistent samples
+	
 	reghdfe y x, absorb(i.family_id)
 	return scalar b_unbiased = _coef[x]
+	return scalar n_unbiased = e(N)
 	
 	reghdfe y x_obs, absorb(i.family_id)
 	return scalar b_biased = _coef[x_obs]
+	return scalar n_biased = e(N)
 	
 	gen diff=(loc_error==1 | L.loc_error==1) if sibling_id==2
 	sum diff
@@ -292,6 +301,7 @@ foreach var of global sim_variables {
 			tempfile t_`var'_`i'
 			simulate2 varname=r(varname) b_unbiased=r(b_unbiased) ///
 				b_biased=r(b_biased) bias=(r(b_biased)-r(b_unbiased)) diff_loc_share=r(diff_loc_share) ///
+				n_unbiased=r(n_unbiased) n_biased=r(n_biased) ///
 				, reps(100) saving("`t_`var'_`i''"): simulation `var'_`i'
 
 			restore	
@@ -377,7 +387,7 @@ esttab bias_by_rho_*, ///
 			
 
 // Latex export:
-esttab bias_by_rho_* using "${OUTPUT}/output/tablefragments/bias_birthloc_simulations_sibling_fe_v3.tex", ///
+esttab bias_by_rho_* using "${OUTPUT}/output/tablefragments/bias_birthloc_simulations_sibling_fe.tex", ///
 			cells("mean(fmt(2))") nonumber ///
 			collabel(none) mlabel("0\%" "20\%" "40\%" "60\%" "80\%" "100\%", lhs("Spatial autocorrelation (rho)") prefix({) suffix(})) ///
 			mgroups("Variance share from time variation", pattern(1 0 0 0 0 0) ///

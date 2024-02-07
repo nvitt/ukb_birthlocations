@@ -69,6 +69,19 @@ graph export "${OUTPUT}/output/graphs/district_fe_bias/bias_district_fe_pooled_c
 graph export "${OUTPUT}/output/graphs/district_fe_bias/bias_district_fe_pooled_colour.pdf", replace
 
 
+// export source data:	
+gen r_str=string(r)
+drop r
+replace r_str=subinstr(r_str,"-","minus",.)
+replace r_str=subinstr(r_str,".","",.)
+reshape wide bias*, j(r_str) i(rho_str) string
+
+order rho_str biasminus95 biasminus75 biasminus5 biasminus25 bias0 bias25 bias5 bias75 bias95
+
+export delimited "${OUTPUT}/output/graphs/district_fe_bias/bias_district_fe_pooled_sourcedata.csv", replace
+
+
+
 
 
 

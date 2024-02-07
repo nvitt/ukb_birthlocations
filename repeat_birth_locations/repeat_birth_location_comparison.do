@@ -109,22 +109,20 @@ est store different_50km_pars
 	
 *** Regression table - full sample:
 esttab different_parish different_district different_county different_0km different_5km different_10km different_30km different_50km, ///
-	cells(b(fmt(3) star) se(fmt(3) par)) ///
+	cells(b(fmt(3)) ci(fmt(3) par)) ///
 	collabels(none) ///
 	mgroup("Different birth location:", pattern(1 0 0 0 0 0 0)) ///
 	mlabel("Parish" "District" "County" "d>0km" "d>5km" "d>10km" "d>30km" "d>50km") ///
-	starlevels(* .1 ** .05 *** .01) ///
 	coeflabels(_cons "Mean") ///
 	noobs nonotes ///
 	stats(N, fmt(0) labels("N")) ///
 	varwidth(20)
 	
 esttab different_parish_pars different_district_pars different_county_pars different_0km_pars different_5km_pars different_10km_pars different_30km_pars different_50km_pars, ///
-	cells(b(fmt(3) star) se(fmt(3) par)) ///
+	cells(b(fmt(3)) ci(fmt(3) par)) ///
 	collabels(none) ///
 	mgroup("Different birth location:", pattern(1 0 0 0 0 0 0)) ///
 	mlabel("Parish" "District" "County" "d>0km" "d>5km" "d>10km" "d>30km" "d>50km") ///
-	starlevels(* .1 ** .05 *** .01) ///
 	coeflabels(p "p") ///
 	noobs nonotes ///
 	stats(N, fmt(0) labels("N")) ///
@@ -133,21 +131,19 @@ esttab different_parish_pars different_district_pars different_county_pars diffe
 	
 // Latex:
 esttab different_parish different_district different_county different_0km different_5km different_10km different_30km different_50km using "${OUTPUT}/tablefragments/repeat_differences_tablefragment.tex", ///
-	cells(b(fmt(3) star) se(fmt(3) par)) ///
+	cells(b(fmt(3)) ci(fmt(3) par)) ///
 	collabels(none) ///
 	mgroup("Different birth location:", pattern(1 0 0 0 0 0 0) ///
 	span prefix(\multicolumn{@span}{c}{) suffix(}) erepeat(\cmidrule(lr){@span})) ///
 	mlabel("Parish" "District" "County" "d>0km" "d>5km" "d>10km" "d>30km" "d>50km", prefix({) suffix(})) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	coeflabels(_cons "Mean") ///
 	noobs nonotes ///
 	compress replace booktabs fragment
 	
 esttab different_parish_pars different_district_pars different_county_pars different_0km_pars different_5km_pars different_10km_pars different_30km_pars different_50km_pars using "${OUTPUT}/tablefragments/repeat_differences_tablefragment.tex", ///
-	cells(b(fmt(3) star) se(fmt(3) par)) ///
+	cells(b(fmt(3)) ci(fmt(3) par)) ///
 	collabels(none) ///
 	mlabel(none) nonumbers ///
-	starlevels(* .1 ** .05 *** .01) ///
 	refcat(q "\textbf{Derived probability:}", nolabel) ///
 	coeflabels(p "$\hat{p}$ (error probability)") ///
 	noobs nonotes ///

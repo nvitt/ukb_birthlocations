@@ -142,6 +142,11 @@ rename gid midpoint_nearest_gid
 
 
 
+*** Limit sample to observations with valid distr, sibdistr and middistr simulated variables:
+keep if simulation_rho0_1!=. & simulation_rho0_1_sibdistr!=. & simulation_rho0_1_middistr!=.
+
+
+
 
 
 
@@ -332,82 +337,80 @@ foreach var of varlist u_* {
 		local x_var = subinstr("`var'","u_","x_",1)
 		estpost correlate `var' `x_var'
 		est store corr_`var'
+		
+		ci2 `var' `x_var', corr
+		matrix A = r(lb) \ r(ub)
+		matrix colnames A = `x_var'
+		estadd matrix ci_corr=A
 	}
 }
 
 * Table:
 esttab corr_u_rho0_*, ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel("0%" "20%" "40%" "60%" "80%", lhs("Spatial autocorrelation (rho)")) ///
 	mgroups("Variance share from time variation", pattern(1 0 0 0 0)) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho0_k2 x_rho0_k0 x_rho0_k4 x_rho0_k0 x_rho0_k6 x_rho0_k0 x_rho0_k8 x_rho0_k0) ///
 	coeflabels(x_rho0_k0 "rho = 0.00") ///
 	noobs nonotes ///
 	varwidth(30)
 	
 esttab corr_u_rho015_*, ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel("0%" "20%" "40%" "60%" "80%", lhs("Spatial autocorrelation (rho)")) ///
 	mgroups("Variance share from time variation", pattern(1 0 0 0 0)) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho015_k2 x_rho015_k0 x_rho015_k4 x_rho015_k0 x_rho015_k6 x_rho015_k0 x_rho015_k8 x_rho015_k0) ///
 	coeflabels(x_rho015_k0 "rho = 0.15") ///
 	noobs nonotes ///
 	varwidth(30)
 	
 esttab corr_u_rho03_*, ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel("0%" "20%" "40%" "60%" "80%", lhs("Spatial autocorrelation (rho)")) ///
 	mgroups("Variance share from time variation", pattern(1 0 0 0 0)) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho03_k2 x_rho03_k0 x_rho03_k4 x_rho03_k0 x_rho03_k6 x_rho03_k0 x_rho03_k8 x_rho03_k0) ///
 	coeflabels(x_rho03_k0 "rho = 0.30") ///
 	noobs nonotes ///
 	varwidth(30)
 	
 esttab corr_u_rho045_*, ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel("0%" "20%" "40%" "60%" "80%", lhs("Spatial autocorrelation (rho)")) ///
 	mgroups("Variance share from time variation", pattern(1 0 0 0 0)) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho045_k2 x_rho045_k0 x_rho045_k4 x_rho045_k0 x_rho045_k6 x_rho045_k0 x_rho045_k8 x_rho045_k0) ///
 	coeflabels(x_rho045_k0 "rho = 0.45") ///
 	noobs nonotes ///
 	varwidth(30)
 	
 esttab corr_u_rho06_*, ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel("0%" "20%" "40%" "60%" "80%", lhs("Spatial autocorrelation (rho)")) ///
 	mgroups("Variance share from time variation", pattern(1 0 0 0 0)) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho06_k2 x_rho06_k0 x_rho06_k4 x_rho06_k0 x_rho06_k6 x_rho06_k0 x_rho06_k8 x_rho06_k0) ///
 	coeflabels(x_rho06_k0 "rho = 0.60") ///
 	noobs nonotes ///
 	varwidth(30)
 	
 esttab corr_u_rho075_*, ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel("0%" "20%" "40%" "60%" "80%", lhs("Spatial autocorrelation (rho)")) ///
 	mgroups("Variance share from time variation", pattern(1 0 0 0 0)) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho075_k2 x_rho075_k0 x_rho075_k4 x_rho075_k0 x_rho075_k6 x_rho075_k0 x_rho075_k8 x_rho075_k0) ///
 	coeflabels(x_rho075_k0 "rho = 0.75") ///
 	noobs nonotes ///
 	varwidth(30)
 	
 esttab corr_u_rho09_*, ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel("0%" "20%" "40%" "60%" "80%", lhs("Spatial autocorrelation (rho)")) ///
 	mgroups("Variance share from time variation", pattern(1 0 0 0 0)) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho09_k2 x_rho09_k0 x_rho09_k4 x_rho09_k0 x_rho09_k6 x_rho09_k0 x_rho09_k8 x_rho09_k0) ///
 	coeflabels(x_rho09_k0 "rho = 0.90") ///
 	noobs nonotes ///
@@ -419,72 +422,65 @@ esttab corr_u_rho09_*, ///
 
 * Latex:
 esttab corr_u_rho0_* using "${OUTPUT}/output/tablefragments/error_correlations.tex", ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel("0\%" "20\%" "40\%" "60\%" "80\%" , lhs("Spatial autocorrelation ($\rho$)") prefix({) suffix(})) ///
 	mgroups("Variance share from time variation (k)", pattern(1 0 0 0 0) ///
 	span prefix(\multicolumn{@span}{c}{) suffix(}) erepeat(\cmidrule(lr){@span})) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho0_k2 x_rho0_k0 x_rho0_k4 x_rho0_k0 x_rho0_k6 x_rho0_k0 x_rho0_k8 x_rho0_k0) ///
 	coeflabels(x_rho0_k0 "$\rho= 0.00$") ///
 	noobs nonotes ///
 	compress replace booktabs fragment
 	
 esttab corr_u_rho015_* using "${OUTPUT}/output/tablefragments/error_correlations.tex", ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel(none) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho015_k2 x_rho015_k0 x_rho015_k4 x_rho015_k0 x_rho015_k6 x_rho015_k0 x_rho015_k8 x_rho015_k0) ///
 	coeflabels(x_rho015_k0 "$\rho = 0.15$") ///
 	noobs nonotes ///
 	compress append booktabs fragment
 	
 esttab corr_u_rho03_* using "${OUTPUT}/output/tablefragments/error_correlations.tex", ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel(none) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho03_k2 x_rho03_k0 x_rho03_k4 x_rho03_k0 x_rho03_k6 x_rho03_k0 x_rho03_k8 x_rho03_k0) ///
 	coeflabels(x_rho03_k0 "$\rho = 0.30$") ///
 	noobs nonotes ///
 	compress append booktabs fragment
 	
 esttab corr_u_rho045_* using "${OUTPUT}/output/tablefragments/error_correlations.tex", ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel(none) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho045_k2 x_rho045_k0 x_rho045_k4 x_rho045_k0 x_rho045_k6 x_rho045_k0 x_rho045_k8 x_rho045_k0) ///
 	coeflabels(x_rho045_k0 "$\rho = 0.45$") ///
 	noobs nonotes ///
 	compress append booktabs fragment
 	
 esttab corr_u_rho06_* using "${OUTPUT}/output/tablefragments/error_correlations.tex", ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel(none) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho06_k2 x_rho06_k0 x_rho06_k4 x_rho06_k0 x_rho06_k6 x_rho06_k0 x_rho06_k8 x_rho06_k0) ///
 	coeflabels(x_rho06_k0 "$\rho = 0.60$") ///
 	noobs nonotes ///
 	compress append booktabs fragment
 	
 esttab corr_u_rho075_* using "${OUTPUT}/output/tablefragments/error_correlations.tex", ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel(none) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho075_k2 x_rho075_k0 x_rho075_k4 x_rho075_k0 x_rho075_k6 x_rho075_k0 x_rho075_k8 x_rho075_k0) ///
 	coeflabels(x_rho075_k0 "$\rho = 0.75$") ///
 	noobs nonotes ///
 	compress append booktabs fragment
 	
 esttab corr_u_rho09_* using "${OUTPUT}/output/tablefragments/error_correlations.tex", ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel(none) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho09_k2 x_rho09_k0 x_rho09_k4 x_rho09_k0 x_rho09_k6 x_rho09_k0 x_rho09_k8 x_rho09_k0) ///
 	coeflabels(x_rho09_k0 "$\rho = 0.90$") ///
 	noobs nonotes ///
@@ -502,82 +498,80 @@ foreach var of varlist u_* {
 		local x_var = subinstr("`var'","u_","x_",1)
 		estpost correlate `var' `x_var' if `var'!=0
 		est store corr_non0_`var'
+		
+		ci2 `var' `x_var' if `var'!=0, corr
+		matrix A = r(lb) \ r(ub)
+		matrix colnames A = `x_var'
+		estadd matrix ci_corr=A
 	}
 }
 
 * Table:
 esttab corr_non0_u_rho0_*, ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel("0%" "20%" "40%" "60%" "80%", lhs("Spatial autocorrelation (rho)")) ///
 	mgroups("Variance share from time variation", pattern(1 0 0 0 0)) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho0_k2 x_rho0_k0 x_rho0_k4 x_rho0_k0 x_rho0_k6 x_rho0_k0 x_rho0_k8 x_rho0_k0) ///
 	coeflabels(x_rho0_k0 "rho = 0.00") ///
 	noobs nonotes ///
 	varwidth(30)
 	
 esttab corr_non0_u_rho015_*, ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel("0%" "20%" "40%" "60%" "80%", lhs("Spatial autocorrelation (rho)")) ///
 	mgroups("Variance share from time variation", pattern(1 0 0 0 0)) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho015_k2 x_rho015_k0 x_rho015_k4 x_rho015_k0 x_rho015_k6 x_rho015_k0 x_rho015_k8 x_rho015_k0) ///
 	coeflabels(x_rho015_k0 "rho = 0.15") ///
 	noobs nonotes ///
 	varwidth(30)
 	
 esttab corr_non0_u_rho03_*, ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel("0%" "20%" "40%" "60%" "80%", lhs("Spatial autocorrelation (rho)")) ///
 	mgroups("Variance share from time variation", pattern(1 0 0 0 0)) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho03_k2 x_rho03_k0 x_rho03_k4 x_rho03_k0 x_rho03_k6 x_rho03_k0 x_rho03_k8 x_rho03_k0) ///
 	coeflabels(x_rho03_k0 "rho = 0.30") ///
 	noobs nonotes ///
 	varwidth(30)
 	
 esttab corr_non0_u_rho045_*, ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel("0%" "20%" "40%" "60%" "80%", lhs("Spatial autocorrelation (rho)")) ///
 	mgroups("Variance share from time variation", pattern(1 0 0 0 0)) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho045_k2 x_rho045_k0 x_rho045_k4 x_rho045_k0 x_rho045_k6 x_rho045_k0 x_rho045_k8 x_rho045_k0) ///
 	coeflabels(x_rho045_k0 "rho = 0.45") ///
 	noobs nonotes ///
 	varwidth(30)
 	
 esttab corr_non0_u_rho06_*, ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel("0%" "20%" "40%" "60%" "80%", lhs("Spatial autocorrelation (rho)")) ///
 	mgroups("Variance share from time variation", pattern(1 0 0 0 0)) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho06_k2 x_rho06_k0 x_rho06_k4 x_rho06_k0 x_rho06_k6 x_rho06_k0 x_rho06_k8 x_rho06_k0) ///
 	coeflabels(x_rho06_k0 "rho = 0.60") ///
 	noobs nonotes ///
 	varwidth(30)
 	
 esttab corr_non0_u_rho075_*, ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel("0%" "20%" "40%" "60%" "80%", lhs("Spatial autocorrelation (rho)")) ///
 	mgroups("Variance share from time variation", pattern(1 0 0 0 0)) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho075_k2 x_rho075_k0 x_rho075_k4 x_rho075_k0 x_rho075_k6 x_rho075_k0 x_rho075_k8 x_rho075_k0) ///
 	coeflabels(x_rho075_k0 "rho = 0.75") ///
 	noobs nonotes ///
 	varwidth(30)
 	
 esttab corr_non0_u_rho09_*, ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel("0%" "20%" "40%" "60%" "80%", lhs("Spatial autocorrelation (rho)")) ///
 	mgroups("Variance share from time variation", pattern(1 0 0 0 0)) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho09_k2 x_rho09_k0 x_rho09_k4 x_rho09_k0 x_rho09_k6 x_rho09_k0 x_rho09_k8 x_rho09_k0) ///
 	coeflabels(x_rho09_k0 "rho = 0.90") ///
 	noobs nonotes ///
@@ -589,72 +583,65 @@ esttab corr_non0_u_rho09_*, ///
 
 * Latex:
 esttab corr_non0_u_rho0_* using "${OUTPUT}/output/tablefragments/nonzero_error_correlations.tex", ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel("0\%" "20\%" "40\%" "60\%" "80\%" , lhs("Spatial autocorrelation ($\rho$)") prefix({) suffix(})) ///
 	mgroups("Variance share from time variation (k)", pattern(1 0 0 0 0) ///
 	span prefix(\multicolumn{@span}{c}{) suffix(}) erepeat(\cmidrule(lr){@span})) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho0_k2 x_rho0_k0 x_rho0_k4 x_rho0_k0 x_rho0_k6 x_rho0_k0 x_rho0_k8 x_rho0_k0) ///
 	coeflabels(x_rho0_k0 "$\rho= 0.00$") ///
 	noobs nonotes ///
 	compress replace booktabs fragment
 	
 esttab corr_non0_u_rho015_* using "${OUTPUT}/output/tablefragments/nonzero_error_correlations.tex", ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel(none) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho015_k2 x_rho015_k0 x_rho015_k4 x_rho015_k0 x_rho015_k6 x_rho015_k0 x_rho015_k8 x_rho015_k0) ///
 	coeflabels(x_rho015_k0 "$\rho = 0.15$") ///
 	noobs nonotes ///
 	compress append booktabs fragment
 	
 esttab corr_non0_u_rho03_* using "${OUTPUT}/output/tablefragments/nonzero_error_correlations.tex", ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel(none) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho03_k2 x_rho03_k0 x_rho03_k4 x_rho03_k0 x_rho03_k6 x_rho03_k0 x_rho03_k8 x_rho03_k0) ///
 	coeflabels(x_rho03_k0 "$\rho = 0.30$") ///
 	noobs nonotes ///
 	compress append booktabs fragment
 	
 esttab corr_non0_u_rho045_* using "${OUTPUT}/output/tablefragments/nonzero_error_correlations.tex", ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel(none) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho045_k2 x_rho045_k0 x_rho045_k4 x_rho045_k0 x_rho045_k6 x_rho045_k0 x_rho045_k8 x_rho045_k0) ///
 	coeflabels(x_rho045_k0 "$\rho = 0.45$") ///
 	noobs nonotes ///
 	compress append booktabs fragment
 	
 esttab corr_non0_u_rho06_* using "${OUTPUT}/output/tablefragments/nonzero_error_correlations.tex", ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel(none) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho06_k2 x_rho06_k0 x_rho06_k4 x_rho06_k0 x_rho06_k6 x_rho06_k0 x_rho06_k8 x_rho06_k0) ///
 	coeflabels(x_rho06_k0 "$\rho = 0.60$") ///
 	noobs nonotes ///
 	compress append booktabs fragment
 	
 esttab corr_non0_u_rho075_* using "${OUTPUT}/output/tablefragments/nonzero_error_correlations.tex", ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel(none) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho075_k2 x_rho075_k0 x_rho075_k4 x_rho075_k0 x_rho075_k6 x_rho075_k0 x_rho075_k8 x_rho075_k0) ///
 	coeflabels(x_rho075_k0 "$\rho = 0.75$") ///
 	noobs nonotes ///
 	compress append booktabs fragment
 	
 esttab corr_non0_u_rho09_* using "${OUTPUT}/output/tablefragments/nonzero_error_correlations.tex", ///
-	cells(b(fmt(3) star)) ///
+	cells(b(fmt(3)) ci_corr[1](fmt(3) par("[" "")) & ci_corr[2](fmt(3) par("" "]"))) incelldelimiter(",") ///
 	collabels(none) nonumber ///
 	mlabel(none) ///
-	starlevels(* .1 ** .05 *** .01) ///
 	rename(x_rho09_k2 x_rho09_k0 x_rho09_k4 x_rho09_k0 x_rho09_k6 x_rho09_k0 x_rho09_k8 x_rho09_k0) ///
 	coeflabels(x_rho09_k0 "$\rho = 0.90$") ///
 	noobs nonotes ///
@@ -693,12 +680,7 @@ foreach var of varlist u_* {
 	
 	if `k'!=100 {	
 		hist `var' if `var'!=0, start(`min') width(0.25) scheme(lean1) xtitle("") title("`title'", size(huge)) percent normal normopts(lcolor(red) lwidth(thick))  xscale(range(-10 10)) yscale(range(0 22)) xlabel(-10 (5) 10) ylabel(0 (5) 20)
+		graph export "${OUTPUT}/output/graphs/error_histograms/nonzero/error_hist_rho`rho'_k`k'_nonzero.png", replace
+		graph export "${OUTPUT}/output/graphs/error_histograms/nonzero/error_hist_rho`rho'_k`k'_nonzero.pdf", replace
 	}
-	
-	if `k'==100 {	
-		hist `var' if `var'!=0, scheme(lean1) xtitle("") title("`title'", size(huge)) percent  xscale(range(-10 10)) yscale(range(0 22)) xlabel(-10 (5) 10) ylabel(0 (5) 20)
-	}
-	
-	graph export "${OUTPUT}/output/graphs/error_histograms/nonzero/error_hist_rho`rho'_k`k'_nonzero.png", replace
-	graph export "${OUTPUT}/output/graphs/error_histograms/nonzero/error_hist_rho`rho'_k`k'_nonzero.pdf", replace
 }
